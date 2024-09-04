@@ -5,18 +5,18 @@
 
 
 std::vector<SingleText> outText = {
-        {2, {"Adding an object", "Press SPACE to save the screenshots","",""}, 0, 0},
-        {1, {"Saving Screenshots. Please wait.", "", "",""}, 0, 0}
+        {1, {"Computer Graphics Final Project"}, 0, 0},
 };
 
 // The uniform buffer object used in this example
 #define NSHIP 16
 #define ANIMALS_NUM 5
-#define BEAR 1
-#define BISON 2
-#define CAMEL 3
-#define CROCODILE 4
-#define ELEPHANT 5
+#define BEAR 0
+#define BISON 1
+#define CAMEL 2
+#define CROCODILE 3
+#define ELEPHANT 4
+
 struct BlinnUniformBufferObject {
     alignas(16) glm::mat4 mvpMat;
     alignas(16) glm::mat4 mMat;
@@ -89,8 +89,13 @@ struct EarthVertex {
     glm::vec4 tan;
 };
 
-glm::vec3 currentPos[ANIMALS_NUM];
-
+glm::vec3 currentPos[ANIMALS_NUM] = {
+        glm::vec3(-4, 0, 0),  // BEAR
+        glm::vec3(4, 0, 0),   // BISON
+        glm::vec3(2, 4, 0),   // CAMEL
+        glm::vec3(0, 0, 0),   // CROCODILE
+        glm::vec3(-2, 0, 0)   // ELEPHANT
+};
 
 // MAIN !
 class A10 : public BaseProject {
@@ -566,10 +571,6 @@ protected:
 
 
 
-
-
-
-
         PEmission.bind(commandBuffer);
         Msun.bind(commandBuffer);
         DSsun.bind(commandBuffer, PEmission, 0, currentImage);
@@ -593,7 +594,22 @@ protected:
 
         txt.populateCommandBuffer(commandBuffer, currentImage, currScene);
     }
+    std::vector<glm::vec2> bisonWaypoints = { {0.0f, 0.0f}, {12.0f, 5.0f} }; // Waypoints per il bisonte
+    std::vector<glm::vec2> bearWaypoints = { {-3.0f, -1.0f}, {-13.0f, -2.0f} }; // Waypoints per l'orso
+    std::vector<glm::vec2> camelWaypoints = { {3.0f, 2.0f}, {13.0f, 7.0f} }; // Waypoints per il cammello
+    std::vector<glm::vec2> crocodileWaypoints = { {0.0f, -12.0f}, {0.0f, 12.0f} }; // Waypoints per il coccodrillo
 
+    int currentWaypointIndex_Bison = 0; // Indice del waypoint corrente per il bisonte
+    int currentWaypointIndex_Bear = 0; // Indice del waypoint corrente per l'orso
+    int currentWaypointIndex_Camel = 0; // Indice del waypoint corrente per il cammello
+    int currentWaypointIndex_Crocodile = 0; // Indice del waypoint corrente per il coccodrillo
+
+    float bisonSpeed = 0.005f; // Velocità del bisonte
+    float bearSpeed = 0.01f; // Velocità dell'orso
+    float camelSpeed = 0.004f; // Velocità del cammello
+    float crocodileSpeed = 0.05; // Velocità del coccodrillo
+
+    float crocRotation = 0.0f;
     // Variabili globali per la telecamera
     glm::vec3 camPos = glm::vec3(0, 0, 3);
     glm::vec3 camFront = glm::vec3(0, 0, -1); // Direzione iniziale della telecamera
@@ -608,9 +624,6 @@ protected:
         if (glfwGetKey(window, GLFW_KEY_ESCAPE)) {
             glfwSetWindowShouldClose(window, GL_TRUE);
         }
-
-        static bool debounce = false;
-        static int curDebounce = 0;
 
         float deltaT;
         glm::vec3 m = glm::vec3(0.0f), r = glm::vec3(0.0f);
@@ -636,160 +649,6 @@ protected:
             tTime = (tTime > TturnTime) ? (tTime - TturnTime) : tTime;
         }
 
-        const float ROT_SPEED = glm::radians(120.0f);
-        const float MOVE_SPEED = 2.0f;
-
-        static float ShowCloud = 1.0f;
-        static float ShowTexture = 1.0f;
-
-/*        // The Fly model update proc.
-        ViewMatrix = glm::rotate(glm::mat4(1), ROT_SPEED * r.x * deltaT,
-                                 glm::vec3(1, 0, 0)) * ViewMatrix;
-        ViewMatrix = glm::rotate(glm::mat4(1), ROT_SPEED * r.y * deltaT,
-                                 glm::vec3(0, 1, 0)) * ViewMatrix;
-        ViewMatrix = glm::rotate(glm::mat4(1), -ROT_SPEED * r.z * deltaT,
-                                 glm::vec3(0, 0, 1)) * ViewMatrix;
-        ViewMatrix = glm::translate(glm::mat4(1), -glm::vec3(
-                MOVE_SPEED * m.x * deltaT, MOVE_SPEED * m.y * deltaT, MOVE_SPEED * m.z * deltaT))
-                     * ViewMatrix;*/
-        static float subpassTimer = 0.0;
-
-/*        if(glfwGetKey(window, GLFW_KEY_SPACE)) {
-            if(!debounce) {
-                debounce = true;
-                curDebounce = GLFW_KEY_SPACE;
-                if(currScene != 1) {
-                    currScene = (currScene+1) % outText.size();
-
-                }
-                if(currScene == 1) {
-                    if(subpass >= 4) {
-                        currScene = 0;
-                    }
-                }
-                std::cout << "Scene : " << currScene << "\n";
-
-                RebuildPipeline();
-            }
-        } else {
-            if((curDebounce == GLFW_KEY_SPACE) && debounce) {
-                debounce = false;
-                curDebounce = 0;
-            }
-        }
-
-        // Standard procedure to quit when the ESC key is pressed
-        if(glfwGetKey(window, GLFW_KEY_ESCAPE)) {
-            glfwSetWindowShouldClose(window, GL_TRUE);
-        }
-
-
-        if(glfwGetKey(window, GLFW_KEY_V)) {
-            if(!debounce) {
-                debounce = true;
-                curDebounce = GLFW_KEY_V;
-
-                printMat4("ViewMatrix  ", ViewMatrix);
-                std::cout << "cTime    = " << cTime    << ";\n";
-                std::cout << "tTime    = " << tTime    << ";\n";
-                std::cout << "ShowCloud    = " << ShowCloud    << ";\n";
-                std::cout << "ShowTexture    = " << ShowTexture    << ";\n";
-            }
-        } else {
-            if((curDebounce == GLFW_KEY_V) && debounce) {
-                debounce = false;
-                curDebounce = 0;
-            }
-        }
-
-        if(glfwGetKey(window, GLFW_KEY_C)) {
-            if(!debounce) {
-                debounce = true;
-                curDebounce = GLFW_KEY_C;
-
-                ShowCloud = 1.0f - ShowCloud;
-            }
-        } else {
-            if((curDebounce == GLFW_KEY_C) && debounce) {
-                debounce = false;
-                curDebounce = 0;
-            }
-        }
-
-        if(glfwGetKey(window, GLFW_KEY_T)) {
-            if(!debounce) {
-                debounce = true;
-                curDebounce = GLFW_KEY_T;
-
-                ShowTexture = 1.0f - ShowTexture;
-            }
-        } else {
-            if((curDebounce == GLFW_KEY_T) && debounce) {
-                debounce = false;
-                curDebounce = 0;
-            }
-        }
-
-
-        if(currScene == 1) {
-            switch(subpass) {
-                case 0:
-                    ViewMatrix   = glm::mat4(-0.0656882, -0.162777, 0.984474, 0, 0.0535786, 0.984606, 0.166374, 0, -0.996401, 0.0636756, -0.0559558, 0, 0.0649244, -0.531504, -3.26128, 1);
-                    cTime    = 22.3604;
-                    tTime    = 22.3604;
-                    ShowCloud    = 1;
-                    ShowTexture    = 1;
-                    autoTime = false;
-                    break;
-                case 1:
-                    ViewMatrix   = glm::mat4(-0.312507, -0.442291, 0.840666, 0, 0.107287, 0.862893, 0.493868, 0, -0.943837, 0.24453, -0.222207, 0, -0.0157694, -0.186147, -1.54649, 1);
-                    cTime    = 38.9919;
-                    tTime    = 38.9919;
-                    ShowCloud    = 0;
-                    ShowTexture    = 1;
-                    break;
-                case 2:
-                    ViewMatrix   = glm::mat4(-0.992288, 0.00260993, -0.12393, 0, -0.0396232, 0.940648, 0.337063, 0, 0.117454, 0.339374, -0.93329, 0, 0.0335061, -0.0115242, -2.99662, 1);
-                    cTime    = 71.0587;
-                    tTime    = 11.0587;
-                    ShowCloud    = 1;
-                    ShowTexture    = 1;
-                    break;
-                case 3:
-                    ViewMatrix   = glm::mat4(0.0942192, -0.242781, 0.965495, 0, 0.560756, 0.814274, 0.150033, 0, -0.822603, 0.527272, 0.212861, 0, -0.567191, -0.254532, -1.79143, 1);
-                    cTime    = 55.9355;
-                    tTime    = 7.93549;
-                    ShowCloud    = 1;
-                    ShowTexture    = 0;
-                    break;
-            }
-        }
-
-        if(currScene == 1) {
-            subpassTimer += deltaT;
-            if(subpassTimer > 4.0f) {
-                subpassTimer = 0.0f;
-                subpass++;
-                std::cout << "Scene : " << currScene << " subpass: " << subpass << "\n";
-                char buf[20];
-                sprintf(buf, "A10_%d.png", subpass);
-                saveScreenshot(buf, currentImage);
-                if(subpass == 4) {
-                    ViewMatrix = glm::translate(glm::mat4(1), -CamPos);
-                    cTime    = 0;
-                    tTime    = 0;
-                    ShowCloud    = 1;
-                    ShowTexture    = 1;
-                    autoTime = true;
-
-
-                    currScene = 0;
-                    std::cout << "Scene : " << currScene << "\n";
-                    RebuildPipeline();
-                }
-            }
-        }*/
-
 // Parameters
         // Camera FOV-y, Near Plane and Far Plane
         const float FOVy = glm::radians(90.0f);
@@ -800,8 +659,8 @@ protected:
         Prj[1][1] *= -1;
 
 // Calculate camera movement based on input
-        const float cameraSpeed = 2.5f * deltaT; // Adjust the speed according to your needs
-        const float sensitivity = 1.0f; // Sensitivity of rotation
+        const float cameraSpeed = 4.0f * deltaT; // Adjust the speed according to your needs
+        const float sensitivity = 2.0f; // Sensitivity of rotation
 
         // Update camera orientation based on arrow keys input
         static float yaw = -90.0f; // Yaw is initialized to -90.0 degrees to look along the negative z-axis by default
@@ -827,6 +686,9 @@ protected:
         if (pitch < -89.0f) {
             pitch = -89.0f;
         }
+
+        // Prevent the user to exit from the island
+
 
         // Calculate new front vector for the camera direction
         glm::vec3 front;
@@ -863,9 +725,16 @@ protected:
         }
 
         // Prevent the camera from going below the floor
-
-
         camPos.y = 1.5f;
+
+        // Prevent the camera from leaving the island boundaries (circular island with radius 12.5)
+        float radius = 13.0f;
+        glm::vec2 camPosXZ = glm::vec2(camPos.x, camPos.z); // Current camera position on the XZ plane
+        if (glm::length(camPosXZ) > radius) {
+            camPosXZ = glm::normalize(camPosXZ) * radius; // Restrict the camera to the edge of the circle
+            camPos.x = camPosXZ.x;
+            camPos.z = camPosXZ.y;
+        }
 
 
         std::vector<std::pair<int, int>> positions1(10);
@@ -913,85 +782,90 @@ protected:
         BlinnUniformBufferObject blinnUbo{};
         BlinnMatParUniformBufferObject blinnMatParUbo{};
 
-/*        for(int j = 0; j < 4; j++) {
-            for(int k = 0; k < 4; k++) {
-                int i = j*4+k;
-                blinnUbo.mMat[i] = glm::scale(glm::translate(glm::mat4(1),glm::vec3((k-1)*5+((j+5)*3+10)*cos(j*1.4),(j-1)*5+((k+5)*2.5+10)*sin(j*1.4)*cos(i*0.2),((k+2.5)*3.2+8)*sin(j*1.4)*sin(k*0.2))) * glm::scale(glm::mat4(1), glm::vec3(0.5,0.5,0.5)), glm::vec3(0.1f) ) * baseTr;
-                blinnUbo.mvpMat[i] = ViewPrj * blinnUbo.mMat[i];
-                blinnUbo.nMat[i] = glm::inverse(glm::transpose(blinnUbo.mMat[i]));
-            }
-        }*/
-//        DSship.map(currentImage, &blinnUbo, 0);
-
+        // ISLAND
         blinnUbo.mMat = glm::rotate(glm::translate(glm::mat4(1), glm::vec3(0, -1.0, 0)) *
                                     glm::scale(glm::mat4(1), glm::vec3(0.1f)),glm::radians(-90.0f), glm::vec3(1, 0, 0) );
         blinnUbo.mvpMat = ViewPrj * blinnUbo.mMat;
         blinnUbo.nMat = glm::inverse(glm::transpose(blinnUbo.mMat));
         DSisland.map(currentImage, &blinnUbo, 0);
         blinnMatParUbo.Power = 200.0;
-
         DSisland.map(currentImage, &blinnMatParUbo, 2);
 
-        blinnUbo.mMat = glm::translate(glm::rotate(
-                glm::rotate(glm::scale(glm::mat4(1), glm::vec3(1.0f)), glm::radians(90.0f), glm::vec3(1, 0, 0)),
-                glm::radians(180.0f), glm::vec3(0, 0, 1)), (currentPos[CROCODILE]));
-        blinnUbo.mvpMat = ViewPrj * blinnUbo.mMat;
-        blinnUbo.nMat = glm::inverse(glm::transpose(blinnUbo.mMat));
-        DScroc.map(currentImage, &blinnUbo, 0);
-
-
-        DScroc.map(currentImage, &blinnMatParUbo, 2);
-
-
+        // WOOD
         blinnUbo.mMat = glm::scale(glm::translate(glm::rotate(
                 glm::rotate(glm::scale(glm::mat4(1), glm::vec3(1.0f)), glm::radians(0.0f), glm::vec3(1, 0, 0)),
                 glm::radians(180.0f), glm::vec3(0, 0, 1)),  glm::vec3 (0,-3,0.1)), glm::vec3(0.75, 1, 1.1) );
         blinnUbo.mvpMat = ViewPrj * blinnUbo.mMat;
         blinnUbo.nMat = glm::inverse(glm::transpose(blinnUbo.mMat));
         DSwood.map(currentImage, &blinnUbo, 0);
-
-
         DSwood.map(currentImage, &blinnMatParUbo, 2);
 
+        // CROCODILE
         blinnUbo.mMat = glm::translate(glm::rotate(
                 glm::rotate(glm::scale(glm::mat4(1), glm::vec3(1.0f)), glm::radians(90.0f), glm::vec3(1, 0, 0)),
-                glm::radians(180.0f), glm::vec3(0, 0, 1)), (currentPos[BISON]) - glm::vec3 (4,0,0));
+                glm::radians(crocRotation), glm::vec3(0, 0, 1)), (currentPos[CROCODILE]));
+        blinnUbo.mvpMat = ViewPrj * blinnUbo.mMat;
+        blinnUbo.nMat = glm::inverse(glm::transpose(blinnUbo.mMat));
+        DScroc.map(currentImage, &blinnUbo, 0);
+        DScroc.map(currentImage, &blinnMatParUbo, 2);
+
+        // BISON
+        blinnUbo.mMat = glm::translate(glm::rotate(
+                glm::rotate(glm::scale(glm::mat4(1), glm::vec3(1.0f)), glm::radians(90.0f), glm::vec3(1, 0, 0)),
+                glm::radians(180.0f), glm::vec3(0, 0, 1)), (currentPos[BISON]));
         blinnUbo.mvpMat = ViewPrj * blinnUbo.mMat;
         blinnUbo.nMat = glm::inverse(glm::transpose(blinnUbo.mMat));
         DSbison.map(currentImage, &blinnUbo, 0);
-
-
         DSbison.map(currentImage, &blinnMatParUbo, 2);
 
+        // CAMEL
         blinnUbo.mMat = glm::translate(glm::rotate(
                 glm::rotate(glm::scale(glm::mat4(1), glm::vec3(1.0f)), glm::radians(90.0f), glm::vec3(1, 0, 0)),
-                glm::radians(180.0f), glm::vec3(0, 0, 1)), (currentPos[CAMEL]) - glm::vec3 (2,0,0));
+                glm::radians(180.0f), glm::vec3(0, 0, 1)), (currentPos[CAMEL]));
         blinnUbo.mvpMat = ViewPrj * blinnUbo.mMat;
         blinnUbo.nMat = glm::inverse(glm::transpose(blinnUbo.mMat));
         DScamel.map(currentImage, &blinnUbo, 0);
-
-
         DScamel.map(currentImage, &blinnMatParUbo, 2);
 
+        //BEAR
         blinnUbo.mMat = glm::translate(glm::rotate(
                 glm::rotate(glm::scale(glm::mat4(1), glm::vec3(1.0f)), glm::radians(90.0f), glm::vec3(1, 0, 0)),
-                glm::radians(180.0f), glm::vec3(0, 0, 1)), (currentPos[BEAR])- glm::vec3 (-4,0,0));
+                glm::radians(180.0f), glm::vec3(0, 0, 1)), (currentPos[BEAR]));
         blinnUbo.mvpMat = ViewPrj * blinnUbo.mMat;
         blinnUbo.nMat = glm::inverse(glm::transpose(blinnUbo.mMat));
         DSbear.map(currentImage, &blinnUbo, 0);
-
-
         DSbear.map(currentImage, &blinnMatParUbo, 2);
 
+        // ELEPHANT
         blinnUbo.mMat = glm::translate(glm::rotate(
                 glm::rotate(glm::scale(glm::mat4(1), glm::vec3(1.0f)), glm::radians(90.0f), glm::vec3(1, 0, 0)),
-                glm::radians(180.0f), glm::vec3(0, 0, 1)), (currentPos[ELEPHANT]) - glm::vec3 (-2,0,0));
+                glm::radians(180.0f), glm::vec3(0, 0, 1)), (currentPos[ELEPHANT]));
         blinnUbo.mvpMat = ViewPrj * blinnUbo.mMat;
         blinnUbo.nMat = glm::inverse(glm::transpose(blinnUbo.mMat));
         DSelep.map(currentImage, &blinnUbo, 0);
-
-
         DSelep.map(currentImage, &blinnMatParUbo, 2);
+
+        // ANIMALS MOVEMENTS:
+        // CROCODILE
+        glm::vec2 directionCrocodile = crocodileWaypoints[currentWaypointIndex_Crocodile] - glm::vec2(currentPos[CROCODILE].x, currentPos[CROCODILE].y);
+        float distanceCrocodile = glm::length(directionCrocodile);
+        if (distanceCrocodile > 0.01f) {
+            glm::vec2 moveDir = glm::normalize(directionCrocodile);
+            currentPos[CROCODILE].x += moveDir.x * crocodileSpeed;
+            currentPos[CROCODILE].y += moveDir.y * crocodileSpeed;
+        }
+        if (glm::length(crocodileWaypoints[currentWaypointIndex_Crocodile] - glm::vec2(currentPos[CROCODILE].x, currentPos[CROCODILE].y)) < 0.01f) {
+            // gira di 180 gradi TODO: calcolare l'angolo di girata con tangente
+            if (crocRotation == 0.0f)
+                crocRotation = 180.0f;
+            else if (crocRotation == 180.0f)
+                crocRotation = 0.0f;
+            currentWaypointIndex_Crocodile++;
+            if (currentWaypointIndex_Crocodile >= crocodileWaypoints.size()) {
+                currentWaypointIndex_Crocodile = 0;
+            }
+        }
+        // end animals movements
 
 
 
@@ -1089,9 +963,6 @@ protected:
         }
 
 
-
-
-
         EmissionUniformBufferObject emissionUbo{};
         emissionUbo.mvpMat = ViewPrj * glm::translate(glm::mat4(1), gubo.lightDir * 40.0f) * baseTr;
         DSsun.map(currentImage, &emissionUbo, 0);
@@ -1100,43 +971,6 @@ protected:
         sbubo.mvpMat = M * glm::mat4(glm::mat3(Mv));
         DSskyBox.map(currentImage, &sbubo, 0);
 
-// **A10** Add to compute the uniforms and pass them to the shaders. You need two uniforms: one for the matrices, and the other for the material parameters.
-
-        // World and normal matrix should be the identiy. The World-View-Projection should be variable ViewPrj
-
-        // These informations should be used to fill the Uniform Buffer Object in Binding 0 of your DSL
-
-
-        // The specular power of the uniform buffer containing the material parameters of the new object should be set to:
-        // XXX.Power = 200.0
-        // Where you replace XXX.Power with the field of the local variable corresponding to the uniform buffer object
-
-        // The textre angle parameter of the uniform buffer containing the material parameters of the new object shoud be set to: tTime * TangTurnTimeFact
-        // XXX.Ang = tTime * TangTurnTimeFact;
-        // Where you replace XXX.Ang with the local field of the variable corresponding to the uniform buffer object
-
-        // The selector for showing the clouds of the uniform buffer containing the material parameters of the new object should be set to:
-        // XXX.ShowCloud = ShowCloud
-        // Where you replace XXX.ShowCloud with the local field of the variable corresponding to the uniform buffer object
-
-        // The selector for showing the clouds of the uniform buffer containing the material parameters of the new object should be set to:
-        // XXX.ShowTexture = ShowTexture
-        // Where you replace XXX.ShowTexture with the local field of the variable corresponding to the uniform buffer object
-
-        // These informations should be used to fill the Uniform Buffer Object in Binding 6 of your DSL
-        // Calcola le uniformi e passale agli shader
-/*        EarthMatricesUniformBufferObject earthMatUbo{};
-        earthMatUbo.mMat = glm::mat4(1.0f); // Sostituisci con la matrice del mondo per il tuo oggetto
-        earthMatUbo.mvpMat = ViewPrj * earthMatUbo.mMat;
-        earthMatUbo.nMat = glm::inverse(glm::transpose(earthMatUbo.mMat));
-        DSEarth.map(currentImage, &earthMatUbo, 0);*/
-
-/*        EarthParametersUniformBufferObject earthParUbo{};
-        earthParUbo.Power = 200.0f;
-        earthParUbo.Ang = tTime * TangTurnTimeFact;
-        earthParUbo.ShowCloud = ShowCloud;
-        earthParUbo.ShowTexture = ShowTexture;
-        DSEarth.map(currentImage, &earthParUbo, 6);*/
 
     }
 };
