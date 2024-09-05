@@ -801,9 +801,10 @@ protected:
         DSwood.map(currentImage, &blinnMatParUbo, 2);
 
         // CROCODILE
-        blinnUbo.mMat = glm::translate(glm::rotate(
+        blinnUbo.mMat = glm::rotate(glm::translate(
                 glm::rotate(glm::scale(glm::mat4(1), glm::vec3(1.0f)), glm::radians(90.0f), glm::vec3(1, 0, 0)),
-                glm::radians(crocRotation), glm::vec3(0, 0, 1)), (currentPos[CROCODILE]));
+                (currentPos[CROCODILE])), glm::radians(crocRotation), glm::vec3(0, 0, 1));
+
         blinnUbo.mvpMat = ViewPrj * blinnUbo.mMat;
         blinnUbo.nMat = glm::inverse(glm::transpose(blinnUbo.mMat));
         DScroc.map(currentImage, &blinnUbo, 0);
@@ -855,16 +856,25 @@ protected:
             currentPos[CROCODILE].y += moveDir.y * crocodileSpeed;
         }
         if (glm::length(crocodileWaypoints[currentWaypointIndex_Crocodile] - glm::vec2(currentPos[CROCODILE].x, currentPos[CROCODILE].y)) < 0.01f) {
-            // gira di 180 gradi TODO: calcolare l'angolo di girata con tangente
+            //gira di 180 gradi TODO: calcolare l'angolo di girata con tangente
             if (crocRotation == 0.0f)
                 crocRotation = 180.0f;
             else if (crocRotation == 180.0f)
                 crocRotation = 0.0f;
+
             currentWaypointIndex_Crocodile++;
+            std::cout << "BOUNCE" << std::endl;
             if (currentWaypointIndex_Crocodile >= crocodileWaypoints.size()) {
                 currentWaypointIndex_Crocodile = 0;
             }
+            //}
         }
+       /* if(crocRotation < 360.0)
+        {
+            crocRotation = crocRotation + 90;
+        } else{
+            crocRotation = 0;
+        }*/
         // end animals movements
 
 
