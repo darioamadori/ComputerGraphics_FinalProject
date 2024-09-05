@@ -39,7 +39,7 @@ include CMakeFiles/rules.ninja
 #############################################
 # Logical path to working directory; prefix for absolute paths.
 
-cmake_ninja_workdir = /Users/darioamadori/Desktop/CG_finalProj/cmake-build-debug/
+cmake_ninja_workdir = /Users/darioamadori/Desktop/ComputerGraphics_FinalProject/cmake-build-debug/
 # =============================================================================
 # Object build statements for EXECUTABLE target island
 
@@ -49,10 +49,10 @@ cmake_ninja_workdir = /Users/darioamadori/Desktop/CG_finalProj/cmake-build-debug
 
 build cmake_object_order_depends_target_island: phony || CMakeFiles/island.dir
 
-build CMakeFiles/island.dir/island.cpp.o: CXX_COMPILER__island_Debug /Users/darioamadori/Desktop/CG_finalProj/island.cpp || cmake_object_order_depends_target_island
+build CMakeFiles/island.dir/island.cpp.o: CXX_COMPILER__island_Debug /Users/darioamadori/Desktop/ComputerGraphics_FinalProject/island.cpp || cmake_object_order_depends_target_island
   DEP_FILE = CMakeFiles/island.dir/island.cpp.o.d
   FLAGS = -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk -mmacosx-version-min=14.2 -std=gnu++17
-  INCLUDES = -I/usr/local/include -I/Users/darioamadori/VulkanSDK/libs/glfw-3.4.bin.MACOS/include -I/Users/darioamadori/VulkanSDK/libs/glm -I/Users/darioamadori/Desktop/CG_finalProj/headers
+  INCLUDES = -I/usr/local/include -I/Users/darioamadori/VulkanSDK/libs/glfw-3.4.bin.MACOS/include -I/Users/darioamadori/VulkanSDK/libs/glm -I/Users/darioamadori/Desktop/ComputerGraphics_FinalProject/headers
   OBJECT_DIR = CMakeFiles/island.dir
   OBJECT_FILE_DIR = CMakeFiles/island.dir
 
@@ -78,7 +78,7 @@ build island: CXX_EXECUTABLE_LINKER__island_Debug CMakeFiles/island.dir/island.c
 # Utility command for edit_cache
 
 build CMakeFiles/edit_cache.util: CUSTOM_COMMAND
-  COMMAND = cd /Users/darioamadori/Desktop/CG_finalProj/cmake-build-debug && /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E echo No\ interactive\ CMake\ dialog\ available.
+  COMMAND = cd /Users/darioamadori/Desktop/ComputerGraphics_FinalProject/cmake-build-debug && /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E echo No\ interactive\ CMake\ dialog\ available.
   DESC = No interactive CMake dialog available...
   restat = 1
 
@@ -89,7 +89,7 @@ build edit_cache: phony CMakeFiles/edit_cache.util
 # Utility command for rebuild_cache
 
 build CMakeFiles/rebuild_cache.util: CUSTOM_COMMAND
-  COMMAND = cd /Users/darioamadori/Desktop/CG_finalProj/cmake-build-debug && /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake --regenerate-during-build -S/Users/darioamadori/Desktop/CG_finalProj -B/Users/darioamadori/Desktop/CG_finalProj/cmake-build-debug
+  COMMAND = cd /Users/darioamadori/Desktop/ComputerGraphics_FinalProject/cmake-build-debug && /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake --regenerate-during-build -S/Users/darioamadori/Desktop/ComputerGraphics_FinalProject -B/Users/darioamadori/Desktop/ComputerGraphics_FinalProject/cmake-build-debug
   DESC = Running CMake to regenerate build system...
   pool = console
   restat = 1
@@ -105,7 +105,7 @@ build rebuild_cache: phony CMakeFiles/rebuild_cache.util
 # =============================================================================
 
 #############################################
-# Folder: /Users/darioamadori/Desktop/CG_finalProj/cmake-build-debug
+# Folder: /Users/darioamadori/Desktop/ComputerGraphics_FinalProject/cmake-build-debug
 
 build all: phony island
 
